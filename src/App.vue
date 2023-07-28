@@ -12,15 +12,16 @@
 
   <!-- 根据路由的修改  页面中的 FloatProxy 将自己对应的样式信息 传给 FloatContainer -->
   <!-- FloatContainer带动里面的元素进行样式上的变化 -->
-  <FloatContainer>
-    <template #imgSlot="{ attrs }">
-      <!-- :class="attrs.class" 为关键步骤 控制元素样式 -->
-      <!-- v-bind="{ ...attrs }" 兼容 tailwind的写法(不写class="xx") -->
-      <TheImageNew
-        :attrs="attrs"
-        :class="attrs.class"
-        v-bind="{ ...attrs }"
-      ></TheImageNew>
-    </template>
+
+
+  <!-- #imgSlot="{ attrs } 具名插槽 获取参数attrs -->
+  <FloatContainer #imgSlot="{ attrs }">
+    <!-- :class="attrs.class" 为关键步骤 控制元素样式 -->
+    <!-- v-bind="{ ...attrs }" 兼容 tailwind的写法(不写class="xx") -->
+    <TheImageNew
+      :attrs="attrs"
+      :class="attrs.class"
+      v-bind="{ ...attrs }"
+    ></TheImageNew>
   </FloatContainer>
 </template>
