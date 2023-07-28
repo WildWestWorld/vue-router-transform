@@ -17,5 +17,5 @@
   </div>
   <!-- 根据路由的修改  FloatProxy 将自己对应的样式信息 传给 FloatContainer -->
   <!-- FloatContainer带动里面的元素进行样式上的变化 -->
-  <FloatProxy class="w-100 h-100 rounded-full m10"></FloatProxy>
+  <FloatProxy w-100 h-100 rounded="1/2" m10></FloatProxy>
 </template>

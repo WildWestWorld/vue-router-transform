@@ -15,7 +15,12 @@
   <FloatContainer>
     <template #imgSlot="{ attrs }">
       <!-- :class="attrs.class" 为关键步骤 控制元素样式 -->
-      <TheImageNew :attrs="attrs" :class="attrs.class"></TheImageNew>
+      <!-- v-bind="{ ...attrs }" 兼容 tailwind的写法(不写class="xx") -->
+      <TheImageNew
+        :attrs="attrs"
+        :class="attrs.class"
+        v-bind="{ ...attrs }"
+      ></TheImageNew>
     </template>
   </FloatContainer>
 </template>
