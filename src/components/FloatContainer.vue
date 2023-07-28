@@ -1,33 +1,14 @@
-<script setup lang="ts">
-import type { StyleValue } from 'vue'
-import { metadata, proxyEl } from '~/composables/floating'
-
-let rect = $ref<DOMRect | undefined>()
-const style = computed((): StyleValue => {
-  return {
-    transition: 'all .5s ease-in-out',
-    position: 'fixed',
-    left: `${rect?.left ?? 0}px`,
-    top: `${rect?.top ?? 0}px`,
-  }
-})
-
-function update() {
-  rect = proxyEl.value?.getBoundingClientRect()
-}
-
-useMutationObserver(proxyEl, update, {
-  childList: true,
-  subtree: true,
-  attributes: true,
-  characterData: true,
-})
-useEventListener('resize', update)
-watchEffect(update)
-</script>
-
 <template>
-  <div :style="style">
-    <slot v-bind="metadata.attrs" />
-  </div>
+  <!-- // 导入Float全局变量用于传输 样式变量 进行路由动画
+// 将其传入子元素 Img 就会进行动画 -->
+  {{ metadata.attrs }}
+
+  <slot name="imgSlot"  :attrs="metadata.attrs"></slot>
 </template>
+
+<script setup lang="ts">
+// 导入Float全局变量用于传输 样式变量 进行路由动画
+// 将其传入子元素 Img 就会进行动画
+import { metadata } from '~/composables/floating';
+
+</script>

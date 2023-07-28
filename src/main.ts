@@ -1,5 +1,6 @@
 import { createApp } from 'vue'
 import { createRouter, createWebHistory } from 'vue-router'
+// 使用虚拟router 自动引入pages 下面的路由
 import routes from 'virtual:generated-pages'
 import App from './App.vue'
 
