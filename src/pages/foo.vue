@@ -14,10 +14,21 @@
     <!-- 如果要使用margin的话得在外层套个marign -->
     <!--sm:row 非手机端 col 布局  -->
     <div m10 flex="~ col sm:row" items-center>
+
+    <!-- 整合前 -->
+    <!-- 
       <FloatProxy
         :style="{ width: size + 'px', height: size + 'px' }"
         rounded="1/2"
       ></FloatProxy>
+
+-->
+
+<!-- 整合后 -->
+      <TheImageProxy
+        :style="{ width: size + 'px', height: size + 'px' }"
+        rounded="1/2"
+      ></TheImageProxy>
       <p flex-1>
         Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod
         tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim
@@ -32,6 +43,8 @@
 </template>
 
 <script setup lang="ts">
+import { TheImageProxy } from '~/composables/images';
+
 // 设置图片的大小  用于测试 占位元素的检测是否会自适应
 // let size = $ref(100);
 

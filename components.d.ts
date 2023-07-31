@@ -5,6 +5,7 @@
 declare module 'vue' {
   export interface GlobalComponents {
     Counter: typeof import('./src/components/Counter.vue')['default']
+    FlatContainerV1: typeof import('./src/components/V1/FlatContainerV1.vue')['default']
     FloatContainer: typeof import('./src/components/FloatContainer.vue')['default']
     FloatContainerOld: typeof import('./src/components/old/FloatContainerOld.vue')['default']
     FloatProxy: typeof import('./src/components/FloatProxy.vue')['default']
