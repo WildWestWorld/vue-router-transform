@@ -1,20 +1,22 @@
+<!--该组件已废弃，替换为 在flotating.ts  使用.h 函数创建组件  -->
+
 <template>
-  <!-- 该组件是核心组件，实际上我们看到的图片显示都是由他来做的 -->
+  <!-- 该组件是核心组件，实际上我们看到的图片显示都是由他来做的
 
-  <!-- // 导入Float全局变量用于传输 样式变量 进行路由动画
-// 将其传入子元素 Img 就会进行动画 -->
-  <!--  metadata.attrs 是我们定义的全局变量  他怎么来的呢？他是根据当前页面Proxy的Attr属性来的-->
-  <!-- {{ metadata.attrs }} -->
-  <!-- 插槽传参 -->
-  <!-- 传入attrs 样式参数 -->
+  导入Float全局变量用于传输 样式变量 进行路由动画
+ 将其传入子元素 Img 就会进行动画
+   metadata.attrs 是我们定义的全局变量  他怎么来的呢？他是根据当前页面Proxy的Attr属性来的
+  {{ metadata.attrs }}
+  插槽传参
+  传入attrs 样式参数
 
-  <!-- 拿到占位元素的信息之后我们利用compute进行 动画元素的移动 -->
-  <!-- 进行移动的时候 不能有其他元素存在，动画元素移动后 无法覆盖占位元素 -->
-  <!-- AniElementStyle 定义了动画的过渡时间，更重要的是他获取了当前页面的proxy的位置，从而进行位置的动画操作 -->
+  拿到占位元素的信息之后我们利用compute进行 动画元素的移动
+  进行移动的时候 不能有其他元素存在，动画元素移动后 无法覆盖占位元素
+  AniElementStyle 定义了动画的过渡时间，更重要的是他获取了当前页面的proxy的位置，从而进行位置的动画操作
 
-  <!-- 这个slot就是用于存放 要显示的元素 然后利用attrs来 传入对应的元素样式，注意这里传入的属性应该徐亚 -->
+  这个slot就是用于存放 要显示的元素 然后利用attrs来 传入对应的元素样式，注意这里传入的属性应该 -->
   <div :style="AniElementStyle">
-    <slot name="imgSlot" :attrs="metadata.attrs"></slot>
+    <slot name="imgSlot" :attrs="metadataTest.attrs"></slot>
   </div>
 </template>
 
@@ -23,7 +25,7 @@ import type { StyleValue } from "vue";
 
 // 导入Float全局变量用于传输 样式变量 进行路由动画
 // 将其传入子元素 Img 就会进行动画
-import { metadata, proxyEl } from "~/composables/floating";
+import { metadataTest, proxyElTest } from "~/composables/floating";
 
 // 代理元素/站位元素的位置信息
 // 这些信息用于移动 我们的动画元素
@@ -61,7 +63,7 @@ let proxyElRect = $ref<DOMRect | undefined>();
 
 // 更新Rect
 function updateRect() {
-  proxyElRect = proxyEl.value?.getBoundingClientRect();
+  proxyElRect = proxyElTest.value?.getBoundingClientRect();
 }
 // 使用useMutationObserver 对proxyEl 进行位置变化监听
 // 如果发生变化就执行更新  占位元素的位置操作
@@ -72,7 +74,7 @@ function updateRect() {
 // -  characterData: true  表示要监听文本内容的变化。
 
 //这里最重要就是监听属性变化的更改
-useMutationObserver(proxyEl, updateRect, {
+useMutationObserver(proxyElTest, updateRect, {
   childList: true,
   subtree: true,
   attributes: true,

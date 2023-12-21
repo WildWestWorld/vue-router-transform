@@ -1,29 +1,17 @@
-//vue style的全局类型
-import type { StyleValue } from "vue";
-
-// 用于Float样式信息的全局变量
-// 因为ref 需要.value 来提取变量所以我们改用
-//非常重要的全局变量，他是控制元素和显示元素之间的桥梁
-export const metadata = reactive<any>({
+//用于定义VueStyle/Component TS类型
+import type { Component, StyleValue } from "vue";
+import { h } from "vue";
+// 废弃，给原始组件用的
+export const metadataTest = reactive<any>({
   props: {},
   attrs: {},
 });
-
-// 元素实际应该处于的位置
-// 因为我们的元素实际是fixed，不是 顶替元素 所在的位置
-// 也就是 我们实际上有两个元素，
-// 一个是在正常文档流 充当 站位的顶替元素
-// 用于变化的 用户实际看到的变化元素
-
-// 我们的目的就是把变化元素移动到顶替元素的位置
-// proxyEl 顶替元素
-//用于传递 控制元素的位置信息
-//重要
-export const proxyEl = ref<HTMLElement | null>();
+// 废弃，给原始组件用的
+export const proxyElTest = ref<HTMLElement | null>();
 
 // 封装 Float组件
 // 传入元素我们封装成组件
-export function createFloating(component: any) {
+export function createFloating<T extends Component>(component: T) {
   const metadata = reactive<any>({
     props: {},
     attrs: {},
@@ -52,10 +40,13 @@ export function createFloating(component: any) {
       //   { immediate: true }
       // );
 
+      //代理元素的位置信息，我们用这个位置信息来 改变显示元素的位置
+      let proxyElRect = $ref<DOMRect | undefined>();
+
       // 拿到占位元素的信息之后我们利用compute进行 动画元素的移动
       const AniElementStyle = computed((): StyleValue => {
         const fixed: StyleValue = {
-          transition: "all 0.5s ease-in-out",
+          transition: "all .3s ease-in-out",
           position: "fixed",
         };
 
@@ -64,15 +55,15 @@ export function createFloating(component: any) {
           return {
             ...fixed,
             opacity: 0,
-            pointerEvents: "none",
             transform: "translateY(-100px)",
+            pointerEvents: "none",
           };
         }
 
         return {
           ...fixed,
-          left: `${proxyElRect?.left ?? 0}px`,
-          top: `${proxyElRect?.top ?? 0}px`,
+          left: `${proxyElRect.left ?? 0}px`,
+          top: `${proxyElRect.top ?? 0}px`,
         };
       });
 
@@ -80,9 +71,6 @@ export function createFloating(component: any) {
       // 用于修复 当页面的元素 发生变化，我们的对应 Rect没有得到更新导致，元素不在位置的BUG
       // useElementBounding 在元素发生变化时就会重新获取对应的 元素信息而且会取消掉上次获取的函数，获得更好的性能
       // const proxyElRect = reactive(useElementBounding(proxyEl));
-
-      //代理元素的位置信息，我们用这个位置信息来 改变显示元素的位置
-      let proxyElRect = $ref<DOMRect | undefined>();
 
       // 更新Rect
       function updateRect() {
@@ -155,12 +143,13 @@ export function createFloating(component: any) {
       // 重要 useAttrs 用于获取组件中的属性
       const attrs = useAttrs();
 
-      //将FloatProxy得到的prop 和arrts 传入的全局变量中
-      metadata.props = props;
-      metadata.attrs = attrs;
-
       // 获取 顶替元素的位置
+      //   这里得到的ref就是元素本身 获取到el我们就发送给对应的全局变量
       const el = ref<HTMLElement>();
+
+      //将FloatProxy得到的prop 和arrts 传入的全局变量中
+      //   metadata.props = props;
+      metadata.attrs = attrs;
 
       //控制元素如果渲染了，就把位置信息传入到代理元素的储存变量中去
       //proxyEl.value  就在本文件的最上层
@@ -179,10 +168,13 @@ export function createFloating(component: any) {
       //   <!-- <div bg-gray-400:10 ref="el"> -->
       //     <!-- 为什么要在外层加个ref ，因为我们要利用ref来获取该元素在页面的位置 -->
       //控制元素的创建 (对标FloatProxy)
+      //ctx.slots.imgSlot 也就是创建一个slot插槽
+
+      //  h(类型,props,children)
+      //ctx.slots.default 这里一定要写默认的插槽，不然会无法正常 显示动画
       return () =>
         h("div", { ref: el }, [
           ctx.slots.default ? h(ctx.slots.default) : null,
-          ctx.slots.imgSlot ? h(ctx.slots.imgSlot) : null,
         ]);
     },
   });

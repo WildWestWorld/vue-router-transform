@@ -2,7 +2,7 @@
 import type { StyleValue } from 'vue'
 
 // ~/  => @ 
-import { metadata, proxyEl } from '~/composables/floating'
+import { metadataTest, proxyElTest } from '~/composables/floating'
 
 let rect = $ref<DOMRect | undefined>()
 const style = computed((): StyleValue => {
@@ -15,10 +15,10 @@ const style = computed((): StyleValue => {
 })
 
 function update() {
-  rect = proxyEl.value?.getBoundingClientRect()
+  rect = proxyElTest.value?.getBoundingClientRect()
 }
 
-useMutationObserver(proxyEl, update, {
+useMutationObserver(proxyElTest, update, {
   childList: true,
   subtree: true,
   attributes: true,
@@ -30,6 +30,6 @@ watchEffect(update)
 
 <template>
   <div :style="style">
-    <slot v-bind="metadata.attrs" />
+    <slot v-bind="metadataTest.attrs" />
   </div>
 </template>

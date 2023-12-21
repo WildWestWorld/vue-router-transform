@@ -14,9 +14,8 @@
     <!-- 如果要使用margin的话得在外层套个marign -->
     <!--sm:row 非手机端 col 布局  -->
     <div m10 flex="~ col sm:row" items-center>
-
-    <!-- 整合前 -->
-    <!-- 
+      <!-- 整合前 -->
+      <!-- 
       <FloatProxy
         :style="{ width: size + 'px', height: size + 'px' }"
         rounded="1/2"
@@ -24,7 +23,7 @@
 
 -->
 
-<!-- 整合后 -->
+      <!-- 整合后 -->
       <TheImageProxy
         :style="{ width: size + 'px', height: size + 'px' }"
         rounded="1/2"
@@ -43,7 +42,7 @@
 </template>
 
 <script setup lang="ts">
-import { TheImageProxy } from '~/composables/images';
+import { TheImageProxy } from "~/composables/images";
 
 // 设置图片的大小  用于测试 占位元素的检测是否会自适应
 // let size = $ref(100);
@@ -52,7 +51,7 @@ import { TheImageProxy } from '~/composables/images';
 
 // 使用  $(...)  语法可以在  <script setup>
 // 区块中执行表达式，并将结果作为响应式的值绑定到组件中。
-let size = $(useStorage('size', 100));
+let size = $(useStorage("size", 100));
 
 // 增大图片
 const enlarge = () => {
