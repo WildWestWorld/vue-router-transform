@@ -1,7 +1,10 @@
 //用于定义VueStyle/Component TS类型
-import { clear } from "console";
 import type { Component, StyleValue } from "vue";
-import { Teleport, h } from "vue";
+import { Teleport, h, Ref } from "vue";
+
+//用于生成唯一id
+import { nanoid } from "nanoid";
+
 // 废弃，给原始组件用的
 export const metadataTest = reactive<any>({
   props: {},
@@ -11,30 +14,103 @@ export const metadataTest = reactive<any>({
 export const proxyElTest = ref<HTMLElement | null>();
 
 //用于设置动画的可配置参数的接口
-interface FloatingOptions {
+export interface TransformOptions {
   duration?: number;
+  landing?: boolean;
+}
+//用于设置动画的可配置参数的接口 后期可能进行拓展
+export type ResolvedTransformOptions = Required<TransformOptions>;
+
+//暂时无用
+export interface TransformInstance {
+  component: Component;
+  container: Component;
+  proxy: Component;
+  options: TransformOptions;
+}
+
+// 控制组件 转为类，便于维护
+export class TransformContext {
+  //对应的控制元素
+  proxyEl: Ref<HTMLElement | undefined> = ref();
+  //传入的props
+  props: Ref<any> = ref();
+  //传入的attrs
+  attrs: Ref<any> = ref();
+  //动画状态
+  landed: Ref<boolean> = ref(false);
+  //控制元素的位置信息
+  proxyElRect: Ref<DOMRect | undefined> = ref();
+
+  //动画定时器
+  private landingTimer: any;
+
+  //  构造器，构造该类时必须传入对应的Options
+  constructor(public options: ResolvedTransformOptions) {}
+
+  //   更新代理元素的位置信息
+  updateRect(proxyEl = this.proxyEl.value) {
+    this.proxyElRect.value = proxyEl?.getClientRects()?.[0];
+  }
+
+  //   变更动画状态为开始
+  liftOff() {
+    this.landed.value = false;
+    clearTimeout(this.landingTimer);
+  }
+  // 变更动画状态为完成
+  land() {
+    clearTimeout(this.landingTimer);
+    this.landingTimer = setTimeout(() => {
+      this.landed.value = true;
+    }, this.options.duration);
+  }
 }
 
 // 封装 Float组件
 // 传入元素我们封装成组件
 export function createFloating<T extends Component>(
   component: T,
-  options: FloatingOptions = {}
+  options: TransformOptions = {}
 ) {
-  const metadata = reactive<any>({
-    props: {},
-    attrs: {},
-  });
+  //配置
+  const transformOptions: ResolvedTransformOptions = {
+    duration: 800,
+    // TODO: fix teleports
+    landing: false,
+    ...options,
+  };
+  //   设置默认的id
+  const defaultId = nanoid();
+  //   重要：当前浮空元素合集，我们用来管理 浮空元素
+  const contextMap = new Map<string, TransformContext>();
 
-  const proxyEl = ref<HTMLElement | null>();
+  //   通过id 获取对应 浮空元素， 如果该浮空元素没有id就手动给他创建一个id
+  function getContext(port = defaultId) {
+    if (!contextMap.has(port))
+      contextMap.set(port, new TransformContext(transformOptions));
+    //! 表示强制类型转换，将 contextMap.get(port) 转换为 TransformContext 类型 让他不能为undefine类型。
+    return contextMap.get(port)!;
+  }
 
-  //获取过渡时间并设置默认值
-  const { duration = 1000 } = options;
+  //代理元素的位置信息，我们用这个位置信息来 改变显示元素的位置
+  //   let proxyElRect = $ref<DOMRect | undefined>();
 
   //显示元素给用户看的元素 ，根据 代理元素传入的位置信息 进行位置和形状的变化
   //defineComponent 自定义组件并使用h来渲染
   const container = defineComponent({
-    setup() {
+    props: {
+      port: {
+        type: String,
+        default: defaultId,
+      },
+    },
+    setup(props) {
+      //将获取到的Context 变成响应式的
+      const context = $computed(() => getContext(props.port));
+      //context包含 对应的控制元素，控制元素为位置信息，attr
+      const { proxyElRect, proxyEl, attrs } = $(context);
+
       // 代理元素/站位元素的位置信息
       // 这些信息用于移动 我们的动画元素
       // const proxyElRect = ref<DOMRect>();
@@ -52,21 +128,16 @@ export function createFloating<T extends Component>(
       //   { immediate: true }
       // );
 
-      //代理元素的位置信息，我们用这个位置信息来 改变显示元素的位置
-      let proxyElRect = $ref<DOMRect | undefined>();
-
       // 拿到占位元素的信息之后我们利用compute进行 动画元素的移动
       const AniElementStyle = computed((): StyleValue => {
         const fixed: StyleValue = {
-          transition: "all ",
-          transitionDuration: `${duration},ms`,
+          transition: `all ${transformOptions.duration}ms ease-in-out`,
           position: "fixed",
         };
 
         // 如果不存在 占位元素信息/占位元素 就变成透明
-        if (!proxyElRect || !proxyEl.value) {
+        if (!proxyElRect || !proxyEl) {
           return {
-            position: "fixed",
             opacity: 0,
             pointerEvents: "none",
           };
@@ -74,8 +145,10 @@ export function createFloating<T extends Component>(
 
         return {
           ...fixed,
-          left: `${proxyElRect.left ?? 0}px`,
-          top: `${proxyElRect.top ?? 0}px`,
+          left: `${proxyElRect.x ?? 0}px`,
+          top: `${proxyElRect.y ?? 0}px`,
+          width: `${proxyElRect.width ?? 0}px`,
+          height: `${proxyElRect.height ?? 0}px`,
         };
       });
 
@@ -85,9 +158,10 @@ export function createFloating<T extends Component>(
       // const proxyElRect = reactive(useElementBounding(proxyEl));
 
       // 更新Rect
-      function updateRect() {
-        proxyElRect = proxyEl.value?.getBoundingClientRect();
-      }
+      //废弃:改用getClientRects 获取xy
+      //   function updateRect() {
+      //     proxyElRect = proxyEl.value?.getBoundingClientRect();
+      //   }
       // 使用useMutationObserver 对proxyEl 进行位置变化监听
       // 如果发生变化就执行更新  占位元素的位置操作
 
@@ -97,22 +171,20 @@ export function createFloating<T extends Component>(
       // -  characterData: true  表示要监听文本内容的变化。
 
       //这里最重要就是监听属性变化的更改
-      useMutationObserver(proxyEl, updateRect, {
-        childList: true,
-        subtree: true,
+      //之前是proxyElRect 现在是context.proxyEl
+      useMutationObserver(context.proxyEl, () => context.updateRect(), {
         attributes: true,
-        characterData: true,
       });
 
       // 当页面尺寸发生变化我们也更新对应的元素位置
-      useEventListener("resize", updateRect);
+      useEventListener("resize", () => context.updateRect());
 
       // watchEffect(updateRect)  是 Vue 3 中的一个 API，用于监测响应式数据的变化并执行相应的副作用函数。
       // 在这个例子中， updateRect  是一个副作用函数，它将在响应式数据发生变化时被调用。
       //  watchEffect  函数会自动追踪在副作用函数中使用的响应式数据，并在这些数据发生变化时重新运行副作用函数。
       // 换句话说 proxyEl.value 改变 执行 updateRect
 
-      watchEffect(updateRect);
+      watchEffect(() => context.updateRect());
 
       //   该组件是核心组件，实际上我们看到的图片显示都是由他来做的
 
@@ -136,15 +208,36 @@ export function createFloating<T extends Component>(
         //也就是把元素 真正的放到了dom树里面，这里很重要
         //如果没有结束就继续渲染/继续执行动画
 
+        //传入的组件
+        const comp = h(component, attrs);
+        //遇到的问题(严重):Teleport元素 转换为AniRender时，组件中的定时器会不受控制 直接触发导致 landed状态直接为true，无动画效果
+        // 当前我们上面的BUG暂时还没有修复，所以我们设置了landing 一直为true，保证代码运行正常
+
+        const teleports = false;
         return h(
           "div",
-          {
-            style: AniElementStyle.value,
-          },
-          [h(component, metadata.attrs)]
+          { style: AniElementStyle.value, class: "starport-container" },
+          [
+            teleports
+              ? h(
+                  Teleport,
+                  {
+                    to: proxyEl,
+                    disabled: teleports,
+                  },
+                  [comp]
+                )
+              : comp,
+          ]
         );
 
-        //遇到的问题(严重):Teleport元素 转换为AniRender时，组件中的定时器会不受控制 直接触发导致 landed状态直接为true，无动画效果
+        // return h(
+        //   "div",
+        //   {
+        //     style: AniElementStyle.value,
+        //   },
+        //   [h(component, metadata.attrs)]
+        // );
       };
     },
   }) as T;
@@ -152,6 +245,20 @@ export function createFloating<T extends Component>(
   //代理元素，也就是 控制器元素，当代理元素改变时，会传入代理元素改变后的位置信息到全局变量
   //显示元素根据全局变量做位置移动的动画效果
   const proxy = defineComponent({
+    props: {
+      port: {
+        type: String,
+        default: defaultId,
+      },
+      props: {
+        type: Object,
+        default: () => {},
+      },
+      attrs: {
+        type: Object,
+        default: () => {},
+      },
+    },
     setup(props, ctx) {
       // 在 Vue 3 中，我们使用  defineProps  函数来定义 props，而不是在组件选项中声明 props。
       // 在上述代码中， <{}>  表示 props 对象没有任何属性，即 props 是一个空对象。
@@ -164,26 +271,34 @@ export function createFloating<T extends Component>(
       // 可以将  attrs  对象展开（使用  v-bind ）到  <input>  元素上，从而允许您将任何属性传递给组件
 
       // 重要 useAttrs 用于获取组件中的属性
-      const attrs = useAttrs();
+      //   const attrs = useAttrs();
 
+      const context = $computed(() => getContext(props.port));
+
+      context.attrs.value = props.attrs;
+      context.props.value = props.props;
       // 获取 顶替元素的位置
       //   这里得到的ref就是元素本身 获取到el我们就发送给对应的全局变量
       const el = ref<HTMLElement>();
 
       //将FloatProxy得到的prop 和arrts 传入的全局变量中
       //   metadata.props = props;
-      metadata.attrs = attrs;
+      //   metadata.attrs = attrs;
 
       //控制元素如果渲染了，就把位置信息传入到代理元素的储存变量中去
       //proxyEl.value  就在本文件的最上层
       onMounted(() => {
         // 将顶替元素赋值给全局变量ProxyEl
-        proxyEl.value = el.value;
+        context.proxyEl.value = el.value;
+        context.updateRect(el.value);
+        context.land();
       });
       //在元素被销毁之前 就把代理元素 位置信息全局变量置为默认值
       onBeforeUnmount(() => {
-        console.log("元素销毁");
-        proxyEl.value = undefined;
+        context.updateRect(el.value);
+        context.liftOff();
+        // console.log("元素销毁");
+        // proxyEl.value = undefined;
       });
 
       //   <!-- ref 不能放到slot上面 -->
@@ -196,9 +311,14 @@ export function createFloating<T extends Component>(
       //  h(类型,props,children)
       //ctx.slots.default 这里一定要写默认的插槽，不然会无法正常 显示动画
       return () =>
-        h("div", { ref: el }, [
-          ctx.slots.default ? h(ctx.slots.default) : null,
-        ]);
+        h(
+          "div",
+          {
+            ref: el,
+            class: "starport-proxy",
+          },
+          [ctx.slots.default ? h(ctx.slots.default) : null]
+        );
     },
   }) as T;
 

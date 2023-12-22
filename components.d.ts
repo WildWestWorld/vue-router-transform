@@ -13,6 +13,7 @@ declare module 'vue' {
     Footer: typeof import('./src/components/Footer.vue')['default']
     TheImage: typeof import('./src/components/old/TheImage.vue')['default']
     TheImageNew: typeof import('./src/components/TheImageNew.vue')['default']
+    TheNav: typeof import('./src/components/TheNav.vue')['default']
   }
 }
 

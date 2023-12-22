@@ -11,7 +11,7 @@
     <!-- 注意：FloatProxy 不能带有 margin样式，margin 会导致无法定位到 占位元素位置，因为margin 了位置  -->
     <!-- 如果要使用margin的话得在外层套个marign -->
     <!--sm:row 非手机端 col 布局  -->
-    <div m10 flex="~ col sm:row" items-center>
+    <div m10 flex="~ col sm:row-reverse gap-4" items-center max-w-180>
       <!-- 整合前 -->
       <!-- 
       <FloatProxy
@@ -24,9 +24,9 @@
       <!-- 整合后 -->
       <TheImageProxy
         :style="{ width: size + 'px', height: size + 'px' }"
-        rounded="1/2"
-      ></TheImageProxy>
-      <p flex-1>
+        :attrs="{ class: 'rounded-1/2 shadow-xl' }"
+      />
+      <p flex-1 text-left>
         Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod
         tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim
         veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea
@@ -49,7 +49,7 @@ import { TheImageProxy } from "~/composables/images";
 
 // 使用  $(...)  语法可以在  <script setup>
 // 区块中执行表达式，并将结果作为响应式的值绑定到组件中。
-let size = $(useStorage("size", 100));
+let size = $(useStorage("size", 200));
 
 // 增大图片
 const enlarge = () => {
@@ -57,6 +57,6 @@ const enlarge = () => {
 };
 // 还原图片
 const reset = () => {
-  size = 100;
+  size = 200;
 };
 </script>

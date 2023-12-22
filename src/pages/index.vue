@@ -1,7 +1,8 @@
 <template>
-  <div p4>
+  <div px8 py-2>
+    <p>Shared component across routes with animations</p>
     <div p4>
-      <button btn @click="() => toggle()">Toggle</button>
+      <button btn @click="toggle()">Toggle Size</button>
     </div>
 
     <!-- 根据路由的修改  FloatProxy 将自己对应的样式信息 传给 FloatContainer -->
@@ -18,6 +19,7 @@
     <TheImageProxy
       :class="mode ? 'w-50 h-50' : 'w-60 h-30'"
       rounded-xl
+      :attrs="{ class: 'rounded-xl' }"
     ></TheImageProxy>
   </div>
 </template>

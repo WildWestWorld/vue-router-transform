@@ -1,33 +1,51 @@
 <!-- 用于变形的图片 -->
 
 <template>
-  <div overflow-hidden transition-all duration-800 @click="() => changeImgState()">
-    <!--    object-cover block w-full  h-full  图片中间内容的显示-->
+  <div
+    overflow-hidden
+    w-full
+    h-full
+    transition-all
+    duration-800
+    relative
+    select-none
+    @click="counter += 1"
+  >
     <img
-      v-if="!showSeaImg"
       object-cover
       block
       w-full
       h-full
-      src="https://images.unsplash.com/photo-1648737851351-b40fce70e77e?ixlib=rb-1.2.1&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1335&q=1"
+      src="https://source.unsplash.com/collection/94734566/512x512"
+      bg-gray-400:20
     />
-
-    <img
-      v-if="showSeaImg"
-      object-cover
-      block
-      w-full
-      h-full
-      src="https://images.unsplash.com/photo-1648721946556-b9266caf9370?ixlib=rb-1.2.1&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=987&q=1"
-    />
+    <div
+      absolute
+      pt-5
+      left-0
+      right-0
+      bottom-0
+      bg-gradient-to-t
+      from-black:40
+      to-transprent
+      text-white
+      font-mono
+      flex
+      items-center
+      justify-center
+    >
+      {{ counter }}
+    </div>
   </div>
 </template>
 
 <script setup lang="ts">
-const showSeaImg = ref(false);
-const changeImgState = () => {
-  showSeaImg.value = !showSeaImg.value;
-};
+// const showSeaImg = ref(false);
+const counter = $ref(Math.round(Math.random() * 100));
+
+// const changeImgState = () => {
+//   showSeaImg.value = !showSeaImg.value;
+// };
 
 onMounted(() => {
   console.warn("ImageMounted");
