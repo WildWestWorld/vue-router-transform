@@ -66,9 +66,8 @@ export function createFloating<T extends Component>(
         // 如果不存在 占位元素信息/占位元素 就变成透明
         if (!proxyElRect || !proxyEl.value) {
           return {
-            ...fixed,
+            position: "fixed",
             opacity: 0,
-            transform: "translateY(-100px)",
             pointerEvents: "none",
           };
         }
@@ -183,8 +182,8 @@ export function createFloating<T extends Component>(
       });
       //在元素被销毁之前 就把代理元素 位置信息全局变量置为默认值
       onBeforeUnmount(() => {
-        // console.log("元素销毁");
-        // proxyEl.value = undefined;
+        console.log("元素销毁");
+        proxyEl.value = undefined;
       });
 
       //   <!-- ref 不能放到slot上面 -->

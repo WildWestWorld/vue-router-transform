@@ -1,10 +1,6 @@
 <template>
-  <div>
-    <div>Index</div>
-    <div>
-      <!-- 跳转到foo链接 -->
-      <RouterLink class="m-3 text-sm btn" to="/foo"> Foo </RouterLink>
-      <RouterLink class="m-3 text-sm btn" to="/bar"> Bar </RouterLink>
+  <div p4>
+    <div p4>
       <button btn @click="() => toggle()">Toggle</button>
     </div>
 
@@ -27,7 +23,7 @@
 </template>
 
 <script lang="ts" setup>
-import { TheImageProxy } from '~/composables/images';
+import { TheImageProxy } from "~/composables/images";
 
 const mode = ref(false);
 const toggle = useToggle(mode);

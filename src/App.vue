@@ -5,6 +5,7 @@
   <!-- text="center gray-700 dark:gray-200" 这个属性将使文本居中对齐，文本颜色为灰色（在默认模式下为灰色 700 级），在  dark` 模式下为灰色 200 级。 -->
 
   <main font-sans p="x-4 y-10" text="center gray-700 dark:gray-200">
+    <TheNav />
     <router-view />
   </main>
 
