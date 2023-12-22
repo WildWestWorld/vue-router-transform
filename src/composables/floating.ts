@@ -1,6 +1,7 @@
 //用于定义VueStyle/Component TS类型
+import { clear } from "console";
 import type { Component, StyleValue } from "vue";
-import { h } from "vue";
+import { Teleport, h } from "vue";
 // 废弃，给原始组件用的
 export const metadataTest = reactive<any>({
   props: {},
@@ -9,15 +10,26 @@ export const metadataTest = reactive<any>({
 // 废弃，给原始组件用的
 export const proxyElTest = ref<HTMLElement | null>();
 
+//用于设置动画的可配置参数的接口
+interface FloatingOptions {
+  duration?: number;
+}
+
 // 封装 Float组件
 // 传入元素我们封装成组件
-export function createFloating<T extends Component>(component: T) {
+export function createFloating<T extends Component>(
+  component: T,
+  options: FloatingOptions = {}
+) {
   const metadata = reactive<any>({
     props: {},
     attrs: {},
   });
 
   const proxyEl = ref<HTMLElement | null>();
+
+  //获取过渡时间并设置默认值
+  const { duration = 1000 } = options;
 
   //显示元素给用户看的元素 ，根据 代理元素传入的位置信息 进行位置和形状的变化
   //defineComponent 自定义组件并使用h来渲染
@@ -46,7 +58,8 @@ export function createFloating<T extends Component>(component: T) {
       // 拿到占位元素的信息之后我们利用compute进行 动画元素的移动
       const AniElementStyle = computed((): StyleValue => {
         const fixed: StyleValue = {
-          transition: "all .3s ease-in-out",
+          transition: "all ",
+          transitionDuration: `${duration},ms`,
           position: "fixed",
         };
 
@@ -119,12 +132,23 @@ export function createFloating<T extends Component>(component: T) {
 
       //显示元素的创建 (对标FloatContainer)
       //我们直接用compent代替slot 进行组件的创建
-      return () =>
-        h("div", { style: AniElementStyle.value }, [
-          h(component, metadata.attrs),
-        ]);
+      return () => {
+        //如果动画状态已经结束，就把 组件 传送到 控制元素的位置
+        //也就是把元素 真正的放到了dom树里面，这里很重要
+        //如果没有结束就继续渲染/继续执行动画
+
+        return h(
+          "div",
+          {
+            style: AniElementStyle.value,
+          },
+          [h(component, metadata.attrs)]
+        );
+
+        //遇到的问题(严重):Teleport元素 转换为AniRender时，组件中的定时器会不受控制 直接触发导致 landed状态直接为true，无动画效果
+      };
     },
-  });
+  }) as T;
 
   //代理元素，也就是 控制器元素，当代理元素改变时，会传入代理元素改变后的位置信息到全局变量
   //显示元素根据全局变量做位置移动的动画效果
@@ -159,8 +183,8 @@ export function createFloating<T extends Component>(component: T) {
       });
       //在元素被销毁之前 就把代理元素 位置信息全局变量置为默认值
       onBeforeUnmount(() => {
-        console.log("元素销毁");
-        proxyEl.value = undefined;
+        // console.log("元素销毁");
+        // proxyEl.value = undefined;
       });
 
       //   <!-- ref 不能放到slot上面 -->
@@ -177,7 +201,7 @@ export function createFloating<T extends Component>(component: T) {
           ctx.slots.default ? h(ctx.slots.default) : null,
         ]);
     },
-  });
+  }) as T;
 
   return {
     container,

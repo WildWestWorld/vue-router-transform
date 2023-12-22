@@ -1,7 +1,7 @@
 <!-- 用于变形的图片 -->
 
 <template>
-  <div overflow-hidden transition-all @click="() => changeImgState()">
+  <div overflow-hidden transition-all duration-800 @click="() => changeImgState()">
     <!--    object-cover block w-full  h-full  图片中间内容的显示-->
     <img
       v-if="!showSeaImg"
@@ -29,6 +29,9 @@ const changeImgState = () => {
   showSeaImg.value = !showSeaImg.value;
 };
 
+onMounted(() => {
+  console.warn("ImageMounted");
+});
 // const props = defineProps({
 //   attrs: Object,
 // });
